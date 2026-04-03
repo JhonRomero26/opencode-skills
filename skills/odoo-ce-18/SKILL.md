@@ -380,9 +380,33 @@ When you are asked to translate a generated `.po` file, you MUST follow these st
      msgstr "Hola"
      ```
 
-2. **Do NOT translate raw numbers or technical symbols**: If a `msgid` contains ONLY numbers (e.g. `802.1p`), empty HTML tags (e.g. `<div class="separator"/>`), or standard technical codes, **leave the `msgstr ""` empty** so Odoo falls back to the original text, or copy it exactly. DO NOT attempt to "translate" numbers.
+2. **Multi-line blocks (`msgid ""`)**: When a text is long and Odoo splits it with `msgid ""` followed by multiple strings, your `msgstr` MUST either be a single line `msgstr "Translated text"` OR a properly formatted multi-line block starting with `msgstr ""`. NEVER mix them, and NEVER append a bare string after a filled `msgstr`.
+   - ❌ BAD (Mixing single line msgstr with a bare string below):
+     ```po
+     msgid ""
+     "Download speed used only when the selected service plan does not define one."
+     msgstr "Velocidad de descarga usada solo cuando el plan no la define."
+     "Velocidad de descarga utilizada solo cuando el plan no la define."
+     ```
+   - ✅ GOOD (Single line):
+     ```po
+     msgid ""
+     "Download speed used only when the selected service plan does not define one."
+     msgstr "Velocidad de descarga usada solo cuando el plan no la define."
+     ```
+   - ✅ GOOD (Multi-line format):
+     ```po
+     msgid ""
+     "Download speed used only when the selected service "
+     "plan does not define one."
+     msgstr ""
+     "Velocidad de descarga usada solo cuando el plan "
+     "no la define."
+     ```
 
-3. **HTML Attributes & Tags**: Only translate the human-readable text inside HTML tags or attributes (like `title="Translate me"`). KEEP the exact HTML structure intact.
+3. **Do NOT translate raw numbers or technical symbols**: If a `msgid` contains ONLY numbers (e.g. `802.1p`), empty HTML tags (e.g. `<div class="separator"/>`), or standard technical codes, **leave the `msgstr ""` empty** so Odoo falls back to the original text, or copy it exactly. DO NOT attempt to "translate" numbers.
+
+4. **HTML Attributes & Tags**: Only translate the human-readable text inside HTML tags or attributes (like `title="Translate me"`). KEEP the exact HTML structure intact.
    - ❌ BAD (Translating classes or adding extra quotes):
      ```po
      msgid "<i class=\"fa fa-signal\" title=\"Signal\"/>"
