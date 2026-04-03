@@ -70,6 +70,9 @@ Create ALL these files in order. Do not omit any:
 │   ├── __init__.py
 │   ├── common.py                # Shared setup
 │   └── test_{model_name}.py     # COMPLETE tests
+├── i18n/                        # Translations
+│   ├── {module_name}.pot        # Base template (generate via CLI)
+│   └── es.po                    # specific languages (e.g. Spanish)
 ├── static/
 │   └── description/
 │       └── icon.png             # (indicate that it is missing)
@@ -345,6 +348,19 @@ migrations/18.0.1.1.0/
 ├── pre-migrate.py    # Rename SQL column before ORM acts
 └── post-migrate.py   # (optional) Post-update cleanup
 ```
+
+### Translations (i18n)
+
+Always consider translations for modules with user-facing strings or views. Generate the `i18n/` directory.
+- **Generate via CLI**: Instead of writing `.pot`/`.po` files manually, suggest or run the Odoo CLI command to export translations when requested.
+  ```bash
+  odoo-bin -c path/to/odoo.conf -d <dbname> --i18n-export=path/to/module/i18n/{module_name}.pot --modules={module_name}
+  ```
+- **Language specific**: To export a specific language (e.g. Spanish):
+  ```bash
+  odoo-bin -c path/to/odoo.conf -d <dbname> --i18n-export=path/to/module/i18n/es.po --modules={module_name} --language=es_ES
+  ```
+- **Doodba adaptation**: If using Doodba, run this via `docker compose exec` (e.g., `docker compose exec odoo odoo --i18n-export=...`).
 
 ---
 
