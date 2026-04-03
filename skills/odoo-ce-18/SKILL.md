@@ -11,7 +11,7 @@ description: >
 license: AGPL-3.0
 metadata:
   author: gentleman-programming
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## Agent Role
@@ -226,7 +226,7 @@ Before delivering, verify mentally:
 6. `_compute_*`
 7. `_onchange_*`
 8. CRUD: `create`, `write`, `unlink`, `copy`
-9. `action_*`
+9. `action_*` (public methods only; XML buttons must never target `_private` methods)
 10. `_private_methods`
 
 ### OCA Python Style
@@ -271,6 +271,13 @@ _logger.info("Processing %d records", len(records))
 <!-- ✅ v18: simplified chatter -->
 <chatter/>
 ```
+
+### XML Button Rule
+
+- Buttons with `type="object"` must call **public** model methods.
+- Use `action_*` names for anything triggered from XML views.
+- Never use `_action_*` or any other private method name as a button target.
+- If a view needs a private helper internally, wrap it in a public `action_*` method.
 
 ### Mandatory Minimum Security
 

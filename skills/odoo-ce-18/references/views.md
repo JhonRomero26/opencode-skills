@@ -18,7 +18,19 @@
 <!-- ✅ v18: simplified chatter -->
 <chatter/>
 <!-- instead of <div class="oe_chatter"><field name="message_ids"/>...</div> -->
+
+<!-- ✅ Buttons must call public methods only -->
+<button name="action_open_form" type="object"/>
+
+<!-- ❌ Never call private methods from XML -->
+<button name="_action_open_form" type="object"/>
 ```
+
+## Button Rule
+
+In Odoo XML views, `type="object"` buttons resolve against model methods.
+Always expose a public `action_*` method for anything triggered from the UI.
+Private helper methods (prefixed with `_`) are for internal Python use only.
 
 ## View Inheritance
 
