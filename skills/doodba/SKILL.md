@@ -71,17 +71,17 @@ docker compose exec odoo odoo -i base_search_fuzzy -d <db_name>
 
 Whenever you need to perform an action in a Doodba environment, use these commands from the project root (where `tasks.py` is):
 
-- **Start environment**: `invoke start` (or `invoke up -d`)
+- **Start environment**: `invoke start`
 - **Stop environment**: `invoke stop`
 - **Restart Odoo**: `invoke restart`
-- **View logs**: `invoke logs -f` (or `invoke logs -f -s odoo`)
+- **View logs**: `invoke logs -f`
 - **Update all repos**: `invoke git-aggregate`
 - **Open a shell in Odoo container**: `docker compose exec odoo bash`
 - **Open PostgreSQL shell**: `docker compose exec db psql -U odoo`
 
 ### Running Odoo CLI Commands (Important!)
 
-Doodba does not provide an `invoke odoo` command. You must use Docker to run Odoo CLI (`odoo-bin` is wrapped as just `odoo` inside the container):
+You must use Docker to run Odoo CLI (`odoo-bin` is wrapped as just `odoo` inside the container):
 
 1. **If the environment IS already running** (prefer this for speed):
    ```bash
@@ -99,12 +99,37 @@ Doodba does not provide an `invoke odoo` command. You must use Docker to run Odo
 
 ## Environment Variables (.env)
 
-When the user needs to configure ports, database passwords, or proxy settings, modify the `.env` file at the root of the project.
-Important variables usually include:
-- `ODOO_VERSION`
-- `ODOO_INITIAL_LANG`
-- `DB_USER` / `DB_PASSWORD`
-- `DOMAIN_PROD` / `DOMAIN_TEST`
+Doodba relies heavily on the `.env` file to configure all infrastructure layers (Odoo, Postgres, Traefik/Proxy, SMTP, etc). When a user asks to configure the environment, modify the `.env` file at the root. Do NOT hardcode configurations in `odoo.conf` unless absolutely necessary, as Doodba dynamically generates `odoo.conf` from these variables.
+
+**Core & Versioning:**
+- `ODOO_MAJOR`, `ODOO_MINOR`, `ODOO_VERSION` (e.g. `ODOO_MAJOR=18.0`)
+- `UID`, `GID` (Permissions alignment for the volume mounts)
+
+**Database (`db` service):**
+- `POSTGRES_DB` (Default database name)
+- `POSTGRES_USER` / `POSTGRES_PASSWORD` (Database credentials)
+- `DB_FILTER` (Crucial for multi-db environments, e.g., `^%d$`)
+
+**Odoo Performance & Limits (`odoo` service):**
+- `ODOO_WORKERS`: Number of HTTP workers (if > 0, enables multiprocessing)
+- `ODOO_MAX_CRON_THREADS`: Number of workers dedicated to cron jobs
+- `ODOO_DB_MAXCONN`: Max Postgres connections per worker
+- `ODOO_LIMIT_TIME_CPU` / `ODOO_LIMIT_TIME_REAL`: Timeout limits
+- `ODOO_LIMIT_MEMORY_HARD` / `ODOO_LIMIT_MEMORY_SOFT`: Memory limits
+
+**Initialization & Scaffolding:**
+- `ODOO_INITIAL_LANG`: Language to install when creating a DB (e.g. `es_AR`)
+- `ODOO_WITHOUT_DEMO`: `all` (to skip demo data in production)
+- `ODOO_SERVER_WIDE_MODULES`: Modules loaded before DB init (e.g., `base,web,queue_job`)
+
+**Routing & Traefik (`proxy` network):**
+- `DOMAIN_PROD`, `DOMAIN_TEST`: Base domains for Traefik routing
+- `TRAEFIK_RULE`: Overrides default routing rule (e.g. `Host(\`${DOMAIN_PROD}\`)`)
+- `ODOO_BASE_URL` / `ODOO_REPORT_URL`: Used by Wkhtmltopdf to resolve assets internally
+
+**Mail & SMTP (usually caught by mailhog/mailpit in dev):**
+- `SMTP_PORT`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`
+- `EMAIL_FROM`
 
 ## Handling Copier Updates
 
