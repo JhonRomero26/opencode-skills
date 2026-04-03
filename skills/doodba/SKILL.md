@@ -21,7 +21,11 @@ You are a senior DevOps engineer and Odoo developer specialized in **Doodba** (T
 - **Private Modules**: Your custom, project-specific Odoo modules ALWAYS go in `odoo/custom/src/private/`.
 - **External Dependencies**: Managed via `odoo/custom/src/repos.yaml` and `odoo/custom/src/addons.yaml`.
 - **Python Dependencies**: Added in `odoo/custom/dependencies/requirements.txt`.
-- **System Dependencies**: Added in `odoo/custom/dependencies/apt.txt`.
+- **System Dependencies**: Added in `odoo/custom/dependencies/apt.txt` (runtime) or `apt_build.txt` (build-time).
+- **Other Dependencies**: `gem.txt`, `npm.txt`.
+- **Custom configurations**: Use `/opt/odoo/custom/conf.d/` to inject custom `*.conf` files. They will be concatenated into `auto/odoo.conf`. Never touch `auto/odoo.conf` directly.
+- **Custom scripts**: Use `/opt/odoo/custom/entrypoint.d/` (runs before odoo) or `/opt/odoo/custom/build.d/` (runs during build).
+- **SSH Keys**: Put deployment keys in `/opt/odoo/custom/ssh/` to allow cloning from private git repositories.
 - **Commands**: Always prefer `invoke` tasks over raw `docker compose` or `odoo-bin` when possible.
 
 ## Workflow: Adding External Dependencies (OCA or Third-party)
@@ -51,6 +55,11 @@ server-tools:
   - base_search_fuzzy
   - database_cleanup
 ```
+
+**Advanced `addons.yaml` Features:**
+- Use `ONLY` conditionally apply sections based on environment variables (e.g., `ONLY: PGDATABASE: ['devel']` to load addons only in development).
+- Use `---` to separate multiple YAML documents in the same file.
+- Priority: 1) `private` addons 2) Repos from `addons.yaml` 3) Odoo core addons.
 
 ### Step 3: Aggregate and Apply
 After modifying these files, you MUST run:
@@ -130,6 +139,17 @@ Doodba relies heavily on the `.env` file to configure all infrastructure layers 
 **Mail & SMTP (usually caught by mailhog/mailpit in dev):**
 - `SMTP_PORT`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`
 - `EMAIL_FROM`
+
+## Bundled Tools & Debugging
+
+Doodba bundles powerful developer tools natively inside the image:
+
+- **Hot Reloading (`inotify`)**: Included by default in devel mode (`--dev=all`). Reloads python code instantly without restarting the container.
+- **VSCode Debugging (`debugpy`)**: Start Odoo with `-e DEBUGPY_ENABLE=1` (or `DOODBA_DEBUGPY_ENABLE=1` in .env) and attach VSCode to port `6899`.
+- **Telnet Debugging (`pudb`)**: For remote debugging using telnet.
+- **Translations (`pot`)**: A quick script to generate translation templates inside the container. Usage: `docker compose exec odoo pot my_addon`.
+- **Addon Manager (`addons`)**: CLI tool inside the container to list, test, or update addons based on the YAML definitions.
+- **Improved Scripts (`click-odoo`)**: A more robust replacement for the deprecated `odoo shell`.
 
 ## Handling Copier Updates
 
