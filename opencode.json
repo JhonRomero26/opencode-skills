@@ -155,11 +155,7 @@
       "url": "https://mcp.context7.com/mcp"
     },
     "engram": {
-      "command": [
-        "/home/romero/.local/bin/engram",
-        "mcp",
-        "--tools=agent"
-      ],
+      "command": ["engram", "mcp", "--tools=agent"],
       "type": "local"
     }
   },
