@@ -76,8 +76,8 @@ Whenever you need to perform an action in a Doodba environment, use these comman
 - **Restart Odoo**: `invoke restart`
 - **View logs**: `invoke logs -f` (or `invoke logs -f -s odoo`)
 - **Update all repos**: `invoke git-aggregate`
-- **Open a shell in Odoo container**: `invoke bash`
-- **Open PostgreSQL shell**: `invoke psql` (or `invoke pgcli`)
+- **Open a shell in Odoo container**: `docker compose exec odoo bash`
+- **Open PostgreSQL shell**: `docker compose exec db psql -U odoo`
 
 ### Running Odoo CLI Commands (Important!)
 
