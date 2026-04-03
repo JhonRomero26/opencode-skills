@@ -363,6 +363,37 @@ Always consider translations for modules with user-facing strings or views. Gene
   ```
 - **Doodba adaptation**: If using Doodba, run this via `docker compose exec` (e.g., `docker compose exec odoo odoo --i18n-export=...`).
 
+### AI Rules for Editing `.po` Translation Files
+
+When you are asked to translate a generated `.po` file, you MUST follow these strict formatting rules:
+
+1. **Single `msgstr` Rule**: NEVER generate duplicate translation lines. Each `msgid` MUST be followed by exactly ONE `msgstr` string. Never provide "alternative" translations in the code.
+   - ❌ BAD (Duplicate / Invalid PO format):
+     ```po
+     msgid "Hello"
+     msgstr "Hola"
+     "Buenas" 
+     ```
+   - ✅ GOOD:
+     ```po
+     msgid "Hello"
+     msgstr "Hola"
+     ```
+
+2. **Do NOT translate raw numbers or technical symbols**: If a `msgid` contains ONLY numbers (e.g. `802.1p`), empty HTML tags (e.g. `<div class="separator"/>`), or standard technical codes, **leave the `msgstr ""` empty** so Odoo falls back to the original text, or copy it exactly. DO NOT attempt to "translate" numbers.
+
+3. **HTML Attributes & Tags**: Only translate the human-readable text inside HTML tags or attributes (like `title="Translate me"`). KEEP the exact HTML structure intact.
+   - ❌ BAD (Translating classes or adding extra quotes):
+     ```po
+     msgid "<i class=\"fa fa-signal\" title=\"Signal\"/>"
+     msgstr "<i class=\"fa fa-senal\" title=\"Señal\"/>"
+     ```
+   - ✅ GOOD:
+     ```po
+     msgid "<i class=\"fa fa-signal\" title=\"Signal\"/>"
+     msgstr "<i class=\"fa fa-signal\" title=\"Señal\"/>"
+     ```
+
 ---
 
 ## Quick Reference Templates
