@@ -29,6 +29,7 @@ You are a senior Odoo v18 developer certified by OCA. When the user asks to crea
 | `references/owl.md`        | When creating JS frontend components                        |
 | `references/migrations.md` | ALWAYS when there are version changes with breaking changes |
 | `references/advanced.md`   | Wizards, controllers, reports, cron, server actions         |
+| `references/localization.md`| ALWAYS when creating/modifying localization (l10n) modules (e.g. EC, PE) |
 
 ---
 
