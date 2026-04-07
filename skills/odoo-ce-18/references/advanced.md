@@ -174,6 +174,49 @@ def _cron_{action}(self):
     _logger.info("Cleaned %d records", len(old))
 ```
 
+## Init Hooks & Multi-Company Base Data
+
+In multi-company environments, `data.xml` files run **once** during module installation. If a new company is created *after* the module is installed, those XML records won't exist for the new company. To solve this, you need a combination of `post_init_hook` (for existing companies at install time) and a `create` override on `res.company` (for future companies).
+
+### 1. The `post_init_hook` and `pre_init_hook`
+Define hooks in `__init__.py`:
+```python
+from . import models
+
+def post_init_hook(env):
+    # Runs AFTER the module is installed.
+    # E.g., populate base stages for all existing companies
+    companies = env['res.company'].search([])
+    for company in companies:
+        env['fsm.stage']._create_base_stages(company)
+
+def pre_init_hook(env):
+    # Runs BEFORE the module is installed.
+    # Useful for running raw SQL to prepare tables before the ORM acts
+    pass
+```
+Register the hooks in `__manifest__.py`:
+```python
+    'post_init_hook': 'post_init_hook',
+    'pre_init_hook': 'pre_init_hook',
+```
+
+### 2. Override `res.company` `create` for Future Companies
+To guarantee that data (like `completed` and `cancel` stages) is created for any new company added in the future:
+
+```python
+class ResCompany(models.Model):
+    _inherit = 'res.company'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        companies = super().create(vals_list)
+        for company in companies:
+            # This method generates the required base records for the new company
+            self.env['fsm.stage'].sudo()._create_base_stages(company)
+        return companies
+```
+
 ## Migration Scripts
 
 Location: `migrations/18.0.X.Y.Z/`
