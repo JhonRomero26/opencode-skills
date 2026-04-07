@@ -231,57 +231,36 @@ Primitive data must always be stored in named constants so that they are easily 
 If the constants are used in a single file, define them at the top of the `.py` file (after imports). If they are shared across multiple models, create a `const.py` file and import them from there.
 
 ```python
-# ✅ GOOD: Grouped, named, and mapped constants
-L10N_EC_VAT_RATES = {
+# ✅ GOOD EXAMPLE (Pattern applies to ANY localization or module):
+# Grouping primitive values (rates, codes, statuses) into descriptive constants.
+
+L10N_XX_VAT_RATES = {
     5: 5.0,
     2: 12.0,
     10: 13.0,
-    3: 14.0,
-    4: 15.0,
     0: 0.0,
-    6: 0.0,
-    7: 0.0,
-    8: 8.0,
 }
 
-L10N_EC_VAT_SUBTAXES = {
-    'vat05': 5,
-    'vat08': 8,
-    'vat12': 2,
-    'vat13': 10,
-    'vat14': 3,
-    'vat15': 4,
-    'zero_vat': 0,
-    'not_charged_vat': 6,
-    'exempt_vat': 7,
-}  # NOTE: non-IVA cases such as ICE and IRBPNR not supported
+L10N_XX_VAT_TAX_NOT_ZERO_GROUPS = ('vat05', 'vat12', 'vat13')
+L10N_XX_VAT_TAX_ZERO_GROUPS = ('zero_vat', 'not_charged_vat', 'exempt_vat')
+L10N_XX_VAT_TAX_GROUPS = tuple(L10N_XX_VAT_TAX_NOT_ZERO_GROUPS + L10N_XX_VAT_TAX_ZERO_GROUPS)
 
-L10N_EC_VAT_TAX_NOT_ZERO_GROUPS = (
-    'vat05', 'vat08', 'vat12', 'vat13', 'vat14', 'vat15',
-)
-L10N_EC_VAT_TAX_ZERO_GROUPS = (
-    'zero_vat', 'not_charged_vat', 'exempt_vat',
-)
-L10N_EC_VAT_TAX_GROUPS = tuple(L10N_EC_VAT_TAX_NOT_ZERO_GROUPS + L10N_EC_VAT_TAX_ZERO_GROUPS)
-
-L10N_EC_WITHHOLD_VAT_CODES = {
+L10N_XX_WITHHOLD_VAT_CODES = {
     0.0: 7,   # 0% vat withhold
     10.0: 9,  # 10% vat withhold
-    20.0: 10, # 20% vat withhold
-    30.0: 1,  # 30% vat withhold
-    70.0: 2,  # 70% vat withhold
     100.0: 3, # 100% vat withhold
 }
 
-L10N_EC_WTH_FOREIGN_GENERAL_REGIME_CODES = ['402', '403', '404', '405', '406', '407', '408', '409', '410', '411']
-L10N_EC_WTH_FOREIGN_NOT_SUBJECT_WITHHOLD_CODES = ['412', '423', '433']
-L10N_EC_WTH_FOREIGN_SUBJECT_WITHHOLD_CODES = list(set(L10N_EC_WTH_FOREIGN_GENERAL_REGIME_CODES) - set(L10N_EC_WTH_FOREIGN_NOT_SUBJECT_WITHHOLD_CODES))
+L10N_XX_WTH_FOREIGN_GENERAL_REGIME_CODES = ['402', '403', '404', '405']
+L10N_XX_WTH_FOREIGN_NOT_SUBJECT_WITHHOLD_CODES = ['412', '423']
+L10N_XX_WTH_FOREIGN_SUBJECT_WITHHOLD_CODES = list(set(L10N_XX_WTH_FOREIGN_GENERAL_REGIME_CODES) - set(L10N_XX_WTH_FOREIGN_NOT_SUBJECT_WITHHOLD_CODES))
 
-L10N_EC_WITHHOLD_FOREIGN_REGIME = [
+L10N_XX_WITHHOLD_FOREIGN_REGIME = [
     ('01', '(01) General Regime'), 
     ('02', '(02) Fiscal Paradise'), 
     ('03', '(03) Preferential Tax Regime')
 ]
 ```
 
-Using dictionaries, tuples, and lists like the example above allows you to do `if code in L10N_EC_WTH_FOREIGN_SUBJECT_WITHHOLD_CODES` rather than having unreadable strings of `if code in ['402', '403', ...]`.
+**Why this is mandatory:**
+Using dictionaries, tuples, and lists like the pattern above allows you to do `if code in L10N_XX_WTH_FOREIGN_SUBJECT_WITHHOLD_CODES` rather than having unreadable strings of `if code in ['402', '403', ...]`. This applies not just to localizations, but to **any Odoo module** dealing with statuses, static mappings, or external codes.
