@@ -1,4 +1,4 @@
-# Localization (l10n) Development in Odoo 18
+# Localization (l10n) Development in Odoo
 
 Designing a localization module (`l10n_XX`) requires a flawless architecture dictated by Odoo S.A. and OCA standards. In multi-company and multi-country environments, **several companies share the same database but are governed by different tax regulations** (e.g., SRI in Ecuador, SUNAT in Peru, AFIP in Argentina).
 
@@ -60,16 +60,24 @@ It is not enough to filter by company (`company_id`). You must verify the **fisc
 If the company is from Ecuador, show the SRI menus; if it's from Peru, show SUNAT.
 
 ### In XML Views (UI)
-Use the `account_fiscal_country_id` or `country_code` field to hide elements:
+The golden rule for multi-company localizations: **never show a country-specific field to a user operating under another country**.
+
+In Odoo 18, use the `company_country_code` field (or similar, depending on the model, e.g. `country_code` on `res.company`) directly in the `invisible` attribute. Do not use complex domain rules or attrs.
 
 ```xml
-<!-- ✅ Correct in v18: Hide field if the company's country is not XX (e.g. EC or PE) -->
+<!-- ✅ Correct: Hide field if the active company's country is not XX (e.g. EC or PE) -->
 <field name="l10n_xx_field_name" invisible="company_country_code != 'XX'"/>
 
 <!-- For menus, views, or pages (Notebooks) -->
 <page string="Local Withholdings" invisible="country_code != 'XX'">
     <!-- ... -->
 </page>
+
+<!-- In Action domains -->
+<record id="action_l10n_xx_taxes" model="ir.actions.act_window">
+    ...
+    <field name="domain">[('company_id.account_fiscal_country_id.code', '=', 'XX')]</field>
+</record>
 ```
 
 ### In Python (Logic)
@@ -153,7 +161,78 @@ class ResPartner(models.Model):
 
 ## 9. Chart of Accounts and Accounting Engine (Odoo 18)
 
-The handling of accounting templates in Odoo 18 has evolved. The definition of the Chart of Accounts and base Taxes is no longer managed with pure XML `account.chart.template` records (as in v14).
-*   In Odoo 18, tax, account, and journal data is usually loaded dynamically through the localization engine (Python and JSON/XML templates).
-*   If you are going to expand accounting, study how template loading works in the `account` module of v18 (usually through classes that inherit from `account.chart.template` in Python and return the structured data `_get_xx_reports()`).
-*   Use fiscal tags (`account.account.tag`) provided by the country code so that dynamic balance and profit reports group accounts correctly without hardcoding IDs.
+Odoo 18 completely abandoned the old XML-based `account.chart.template` model for installing accounting data. Everything is now managed via Python classes inheriting from `account.chart.template`.
+
+If you are creating or extending a localization (`l10n_xx`), you must implement a model like this:
+
+```python
+from odoo import models
+from odoo.addons.account.models.chart_template import template
+
+class AccountChartTemplate(models.AbstractModel):
+    _inherit = 'account.chart.template'
+
+    @template('xx')
+    def _get_xx_template_data(self):
+        return {
+            'code_digits': 6,
+            'property_account_receivable_id': 'xx_account_1210',
+            'property_account_payable_id': 'xx_account_2110',
+            'property_account_expense_categ_id': 'xx_account_6110',
+            'property_account_income_categ_id': 'xx_account_7110',
+            'name': 'Standard Chart of Accounts (XX)',
+        }
+
+    @template('xx', 'res.company')
+    def _get_xx_res_company(self):
+        return {
+            self.env.company.id: {
+                'account_fiscal_country_id': 'base.xx',
+                'bank_account_code_prefix': '111',
+                'cash_account_code_prefix': '112',
+                'transfer_account_code_prefix': '113',
+            },
+        }
+
+    @template('xx', 'account.account')
+    def _get_xx_account_account(self):
+        # Return a dictionary of accounts: {'xml_id': {'name': 'Account Name', 'code': '1010', 'account_type': 'asset_receivable'}}
+        pass
+
+    @template('xx', 'account.tax')
+    def _get_xx_account_tax(self):
+        # Return a dictionary of taxes
+        pass
+```
+
+### Key rules for the new template engine:
+1. **Dynamic Loading**: Use the `@template('country_code')` decorator. Odoo will automatically discover and load these dictionaries when installing the chart of accounts for that country.
+2. **Account Types**: Always use standard Odoo 18 account types (e.g. `asset_receivable`, `liability_payable`, `income`, `expense`).
+3. **XML IDs**: Even though data is in Python, use string keys as XML IDs (e.g., `'xx_account_1210'`). These are resolved dynamically.
+4. **Fiscal Tags**: Use `account.account.tag` provided by the country code to group accounts in dynamic balance and profit reports, rather than hardcoding account codes.
+
+---
+
+## 10. EDI (Electronic Data Interchange) Standards
+
+When building e-invoicing for a localization (e.g., `l10n_xx_edi`), do not re-invent the wheel. Odoo 18 provides a powerful base framework for electronic documents:
+
+1. **Inherit `account.edi.format`**: Create a new record in `account.edi.format` with your country's standard (e.g., Factura-e).
+2. **Override `_create_invoice_edi_xml`**: Instead of manually building strings or using raw lxml, use Odoo's QWeb templating system to generate the XML payload from a view (`ir.ui.view`).
+3. **Attachments**: Always use `ir.attachment` linked to the `account.move` with the generated XML, and mark it with the specific EDI type.
+
+```python
+class AccountEdiFormat(models.Model):
+    _inherit = 'account.edi.format'
+
+    def _is_required_for_invoice(self, invoice):
+        # Only require this format if the invoice belongs to our localization
+        return invoice.company_id.account_fiscal_country_id.code == 'XX' and self.code == 'xx_edi_standard'
+
+    def _create_invoice_edi_xml(self, invoice):
+        # Prepare the rendering values
+        values = self._xx_get_edi_values(invoice)
+        # Render the QWeb template
+        xml_content = self.env['ir.qweb']._render('l10n_xx_edi.template_invoice_xml', values)
+        return xml_content
+```
