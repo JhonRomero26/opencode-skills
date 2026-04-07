@@ -477,4 +477,4 @@ It allows users to:
 
 ## Keywords
 
-odoo, odoo 18, oca, module, scaffold, model, view, security, test, transactioncase, httpcase, owl, controller, wizard, migration, erp, **manifest**
+odoo, odoo 18, oca, module, scaffold, model, view, security, test, transactioncase, httpcase, owl, controller, wizard, localization, migration, erp, **manifest**
