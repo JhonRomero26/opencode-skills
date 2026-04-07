@@ -1,6 +1,8 @@
 ## Rules
 
 - NO MAGIC NUMBERS: Never hardcode primitive data (magic numbers, strings, tax codes, status flags) directly in logic. Always extract them into named constants, dictionaries, or enums grouped at the top of the file or in a separate constants file. This applies to ALL languages and frameworks.
+- PRAGMATIC DRY (Don't Repeat Yourself): Reuse existing functions or classes if they already do the job, but do not force DRY if it creates tight coupling or contaminates independent modules. Balance reuse with decoupling.
+- SINGLE RESPONSIBILITY PRINCIPLE (SRP): Functions and classes must have one single, well-defined responsibility. Do not write massive "god" functions.
 - Never add "Co-Authored-By" or AI attribution to commits. Use conventional commits only.
 - Never build after changes.
 - When asking a question, STOP and wait for response. Never continue or assume answers.
