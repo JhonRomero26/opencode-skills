@@ -10,7 +10,7 @@ description: >
   ALWAYS use this skill for any Odoo code — even small modifications.
 license: AGPL-3.0
 metadata:
-  author: gentleman-programming
+  author: JhonRomero26
   version: "1.1"
 ---
 
@@ -160,7 +160,7 @@ sale_custom_order/
 
 Before delivering, verify mentally:
 
-- [ ] Every `.py` and `.xml` file has an AGPL-3 copyright header
+- [ ] Every `.py` and `.xml` file has an AGPL-3 o OPL-1 copyright header
 - [ ] `__manifest__.py` has version `18.0.1.0.0` and `"Mass EC"` in author
 - [ ] All models have `_description`
 - [ ] Fields are ordered: primitives → relational → computed
@@ -185,14 +185,24 @@ Before delivering, verify mentally:
 ### Copyright Header — EACH file
 
 ```python
-# Copyright 2025 {Company}
+# Copyright 2025 {Author or Company}
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
+
+# OR
+
+# Copyright 2025 {Author or Company}
+# License OPL-1.0 or later (https://www.odoo.com/documentation/master/legal/licenses.html#odoo-proprietary-license-v1-0)
 ```
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Copyright 2025 {Company}
+<!-- Copyright 2025 {Author or Company}
      License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl). -->
+
+<!-- OR -->
+
+<!-- Copyright 2025 {Author or Company}
+     License OPL-1.0 or later (https://www.odoo.com/documentation/master/legal/licenses.html#odoo-proprietary-license-v1-0) -->
 ```
 
 ### **manifest**.py
@@ -206,7 +216,7 @@ Before delivering, verify mentally:
     "website": "https://github.com/mass-ec/{repo}",
     "author": "{Company}, Mass EC",
     "maintainers": ["{github_user}"],
-    "license": "AGPL-3",
+    "license": "AGPL-3", # Or OPL-1
     "application": False,
     "installable": True,
     "depends": ["base"],
